@@ -1,5 +1,3 @@
-# vicsek_local.py
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -8,10 +6,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-
 # ============================================================
 # Parameters
 # ============================================================
+
 
 @dataclass
 class VicsekParameters:
@@ -31,6 +29,7 @@ class VicsekParameters:
 # ============================================================
 # Simulation
 # ============================================================
+
 
 def order_parameter(theta: np.ndarray) -> float:
     return float(np.hypot(np.mean(np.cos(theta)), np.mean(np.sin(theta))))
@@ -110,6 +109,7 @@ def simulate_vicsek(
 # ============================================================
 # Animation
 # ============================================================
+
 
 def add_orientation_color_wheel(fig, ax, cmap: str = "hsv"):
     bbox = ax.get_position()

@@ -111,11 +111,11 @@ def simulate_vicsek(
 # ============================================================
 
 
-def add_orientation_color_wheel(fig, ax, cmap: str = "hsv"):
+def add_orientation_color_wheel(fig, ax, cmap: str = "hsv", inner_radius: float = 0.40):
     bbox = ax.get_position()
     wheel_left = bbox.x1 + 0.04
     wheel_size = min(
-        min(bbox.width, bbox.height) * 0.30,
+        min(bbox.width, bbox.height) * 0.36,
         0.98 - wheel_left,
     )
     wheel_bottom = bbox.y0 + 0.5 * (bbox.height - wheel_size)
@@ -131,7 +131,7 @@ def add_orientation_color_wheel(fig, ax, cmap: str = "hsv"):
 
     radius = np.hypot(xx, yy)
     angle = np.arctan2(yy, xx) % (2.0 * np.pi)
-    wheel = np.ma.array(angle, mask=radius > 1.0)
+    wheel = np.ma.array(angle, mask=(radius > 1.0) | (radius < inner_radius))
     cmap_obj = plt.get_cmap(cmap).copy()
     cmap_obj.set_bad(alpha=0.0)
 
@@ -148,11 +148,11 @@ def add_orientation_color_wheel(fig, ax, cmap: str = "hsv"):
     wheel_ax.set_aspect("equal")
     wheel_ax.set_xlim(-1.25, 1.25)
     wheel_ax.set_ylim(-1.25, 1.25)
-    wheel_ax.set_title("orientation", fontsize=10, pad=8)
-    wheel_ax.text(1.12, 0.0, "0", ha="left", va="center", fontsize=9)
-    wheel_ax.text(0.0, 1.12, r"$\pi/2$", ha="center", va="bottom", fontsize=9)
-    wheel_ax.text(-1.12, 0.0, r"$\pi$", ha="right", va="center", fontsize=9)
-    wheel_ax.text(0.0, -1.12, r"$3\pi/2$", ha="center", va="top", fontsize=9)
+    wheel_ax.set_title("orientation", fontsize=12, pad=10)
+    wheel_ax.text(1.12, 0.0, "0", ha="left", va="center", fontsize=11)
+    wheel_ax.text(0.0, 1.12, r"$\pi/2$", ha="center", va="bottom", fontsize=11)
+    wheel_ax.text(-1.12, 0.0, r"$\pi$", ha="right", va="center", fontsize=11)
+    wheel_ax.text(0.0, -1.12, r"$3\pi/2$", ha="center", va="top", fontsize=11)
     wheel_ax.set_axis_off()
 
     return wheel_ax
@@ -228,8 +228,8 @@ def animate_vicsek(
 
         title.set_text(
             f"Vicsek model | step = {step} | "
-            f"phi = {order_history[frame_index]:.3f} | "
-            f"rho = {params.density:.3f}"
+            rf"$\phi$ = {order_history[frame_index]:.3f} | "
+            rf"$\rho$ = {params.density:.3f}"
         )
 
         return scatter, arrows, title

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from matplotlib.widgets import Button
 
 # ============================================================
 # Parameters
@@ -113,12 +114,12 @@ def simulate_vicsek(
 
 def add_orientation_color_wheel(fig, ax, cmap: str = "hsv", inner_radius: float = 0.40):
     bbox = ax.get_position()
-    wheel_left = bbox.x1 + 0.04
+    wheel_left = bbox.x1 + 0.035
     wheel_size = min(
         min(bbox.width, bbox.height) * 0.36,
         0.98 - wheel_left,
     )
-    wheel_bottom = bbox.y0 + 0.5 * (bbox.height - wheel_size)
+    wheel_bottom = bbox.y1 - wheel_size
 
     wheel_ax = fig.add_axes(
         [wheel_left, wheel_bottom, wheel_size, wheel_size],
@@ -174,7 +175,7 @@ def animate_vicsek(
     )
 
     fig, ax = plt.subplots(figsize=figsize)
-    fig.subplots_adjust(right=0.82)
+    fig.subplots_adjust(right=0.74)
 
     ax.set_xlim(0.0, params.box_size)
     ax.set_ylim(0.0, params.box_size)
@@ -211,9 +212,13 @@ def animate_vicsek(
         alpha=0.75,
     )
 
-    add_orientation_color_wheel(fig, ax)
+    wheel_ax = add_orientation_color_wheel(fig, ax)
 
     title = ax.set_title("")
+    frame_state = {
+        "index": 0,
+        "is_running": True,
+    }
 
     def update(frame_index: int):
         positions = positions_history[frame_index]
@@ -234,13 +239,65 @@ def animate_vicsek(
 
         return scatter, arrows, title
 
+    def frame_sequence():
+        while True:
+            frame_index = frame_state["index"]
+            frame_state["index"] = (frame_index + 1) % len(order_history)
+            yield frame_index
+
+    def show_frame(frame_index: int):
+        update(frame_index)
+        frame_state["index"] = (frame_index + 1) % len(order_history)
+        fig.canvas.draw_idle()
+
     anim = FuncAnimation(
         fig,
         update,
-        frames=len(order_history),
+        frames=frame_sequence,
         interval=interval_ms,
         blit=False,
+        cache_frame_data=False,
     )
+
+    wheel_bbox = wheel_ax.get_position()
+    button_gap = 0.012
+    button_height = 0.045
+    button_bottom = wheel_bbox.y0 - button_height - 0.035
+    button_width = 0.5 * (wheel_bbox.width - button_gap)
+
+    play_ax = fig.add_axes(
+        [wheel_bbox.x0, button_bottom, button_width, button_height],
+    )
+    reset_ax = fig.add_axes(
+        [
+            wheel_bbox.x0 + button_width + button_gap,
+            button_bottom,
+            button_width,
+            button_height,
+        ],
+    )
+
+    play_button = Button(play_ax, "Pause")
+    reset_button = Button(reset_ax, "Reset")
+
+    def toggle_play(_event):
+        if frame_state["is_running"]:
+            anim.event_source.stop()
+            play_button.label.set_text("Play")
+        else:
+            anim.event_source.start()
+            play_button.label.set_text("Pause")
+
+        frame_state["is_running"] = not frame_state["is_running"]
+        fig.canvas.draw_idle()
+
+    def reset_animation(_event):
+        show_frame(0)
+
+    play_button.on_clicked(toggle_play)
+    reset_button.on_clicked(reset_animation)
+
+    fig._vicsek_buttons = (play_button, reset_button)
 
     return fig, anim
 

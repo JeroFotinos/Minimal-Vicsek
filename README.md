@@ -6,20 +6,16 @@ Minimal local implementation of the two-dimensional Vicsek model, based on the m
 
 For particle \(i\),
 
-$$
-\theta_i(t+\Delta t)
-=
+$$ \theta_i(t+\Delta t) =
 \arg\left[
-\sum_{j:\, |\mathbf{x}_j-\mathbf{x}_i| \le r}
+\sum_{j: |\mathbf{x}_j-\mathbf{x}_i| \le r}
 e^{i\theta_j(t)}
 \right]
 +
 \xi_i(t),
 $$
 
-$$
-\mathbf{x}_i(t+\Delta t)
-=
+$$ \mathbf{x}_i(t+\Delta t) =
 \mathbf{x}_i(t)
 +
 v\,\Delta t
